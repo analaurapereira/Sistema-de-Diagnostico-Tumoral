@@ -13,7 +13,8 @@ cores_referencia = {
     "Rosa":     [np.array([160, 50, 50]), np.array([179, 255, 255])]
 }
 
-img = cv2.imread('teste.jpg')
+# Necessário alterar o nome da imagem pela que quer testar
+img = cv2.imread('Colorido_1.jpg')
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 total_pixels = img.shape[0] * img.shape[1]
 
