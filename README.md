@@ -49,7 +49,8 @@ Ao executar o arquivo principal (`main.py`), a seguinte sequência acontece:
 5. **Cálculos Matemáticos-Clínicos**: Tendo mapeado através de pixels a massa craniana inteira em relação à massa tumoral da imagem, é feito o cálculo do grau do dano. Com base na altura e sexo informados e da estimativa, o peso total do cérebro em gramas é calculado, derivando-se assim o peso que essa anomalia teria.
 6. **Resultados**: O script emite alertas via terminal e aciona o pop-up das imagem geradas em 4 camadas que mostram tudo o que o código analisou na radiologia (onde ele aplica a linha marcando a anomalia em vermelho, por exemplo). Foi adicionado uma validação que apenas valores maiores que 1% serão exibidos como possível tumor, devido a chance de erro
 
-
+[![Assista ao vídeo](https://img.youtube.com/vi/jFYS9nb5x08/0.jpg)](https://youtu.be/jFYS9nb5x08)
+![Imagem de exemplo da saída]()
 
 <br>
 
