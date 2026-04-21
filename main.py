@@ -1,15 +1,29 @@
 import os
 os.environ['QT_LOGGING_RULES'] = '*=false'
-
 import cv2
 import numpy as np
 import kagglehub
 import random
 
 print("=== SISTEMA DE DIAGNÓSTICO ===")
-sexo = input("Digite o sexo biológico do paciente (M/F): ")
-peso = input("Digite o peso do paciente (kg): ")
-altura = input("Digite a altura do paciente (cm): ")
+
+while True:
+    sexo = input("Digite o sexo biológico do paciente (M/F): ").strip()
+    if sexo.upper() in ('M', 'F'):
+        break
+    print("  [ERRO] Valor inválido. Digite apenas 'M' para masculino ou 'F' para feminino.")
+
+# Validação da altura
+while True:
+    altura = input("Digite a altura do paciente (cm): ").strip()
+    try:
+        alt_val = float(altura)
+        if alt_val <= 0:
+            print("  [ERRO] A altura deve ser um número positivo.")
+        else:
+            break
+    except ValueError:
+        print("  [ERRO] Valor inválido. Digite um número (ex: 175).")
 
 # Baixa a base de dados de imagens de ressonância (Kaggle)
 path = kagglehub.dataset_download("navoneel/brain-mri-images-for-brain-tumor-detection")
@@ -25,13 +39,12 @@ img_path = os.path.join(subpasta, img_name)
 img = cv2.imread(img_path)
 diagnostico = img.copy()
 
-# Converte a imagem BGR (colorida) para Cinza
+# Converte a imagem colorida para Cinza
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-# Aplica um desfoque suave para remover pequenos artefatos
+# Aplica um desfoque  para remover pequenos artefatos
 blur = cv2.GaussianBlur(gray, (5, 5), 0)
 
-# 1. ENCONTRAR O CÉREBRO COMPLETO
 # Aplica limite baixo de cor para enxergar apenas a cabeça toda
 _, thresh_cerebro = cv2.threshold(blur, 10, 255, cv2.THRESH_BINARY)
 kernel = np.ones((5,5), np.uint8)
@@ -47,7 +60,6 @@ if contours_cerebro:
     c_cerebro_max = max(contours_cerebro, key=cv2.contourArea)
     area_cerebro = cv2.contourArea(c_cerebro_max)
 
-# 2. ENCONTRAR O TUMOR (ÁREAS MAIS CLARAS)
 # Aplica um limite alto para enxergar só partes muito brancas (anomalias)
 _, thresh = cv2.threshold(blur, 155, 255, cv2.THRESH_BINARY)
 
@@ -73,45 +85,47 @@ if contours:
         # Desenha a linha vermelha em volta da área suspeita
         cv2.drawContours(diagnostico, [c_max], -1, (0, 0, 255), 2)
         
-
-# --- ESTIMATIVA DE PESO DO CÉREBRO ---
 # Utilizando a fórmula baseada em altura e sexo (Ho et al.)
 peso_cerebro_g = 0
-try:
-    alt_val = float(altura)
-    if sexo.upper().startswith('M'):
-        peso_cerebro_g = 920 + 2.70 * alt_val
-    elif sexo.upper().startswith('F'):
-        peso_cerebro_g = 748 + 3.10 * alt_val
-    else:
-        peso_cerebro_g = 834 + 2.90 * alt_val  # Média
-except ValueError:
-    pass
 
-# --- IMPRIMIR DADOS DO EXAME ---
+if sexo.upper() == 'M':
+    peso_cerebro_g = 920 + 2.70 * alt_val
+else:
+    peso_cerebro_g = 748 + 3.10 * alt_val
+
+
 print("--- Relatório de Scanner MRI (Cérebro) ---")
-print(f"Paciente: Sexo {sexo.upper()} | Peso: {peso}kg | Altura: {altura}cm")
+print(f"Paciente: Sexo {sexo.upper()} | Altura: {altura}cm")
 print(f"Arquivo analisado: {img_name}")
 print(f"Diagnóstico real do dataset: {pasta_escolhida.upper()}")
 
-if tumor_encontrado:
-    print(f"\n[ALERTA]: Possível massa tumoral detectada pelo algoritmo!")
-    if area_cerebro > 0:
-        pct = (area_suspeita / area_cerebro) * 100
+if tumor_encontrado and area_cerebro > 0:
+    pct = (area_suspeita / area_cerebro) * 100
+    if pct > 1.0:
+        print(f"\n[ALERTA]: Possível massa tumoral detectada pelo algoritmo!")
         print(f">> Porcentagem da massa afetada pela anomalia: {pct:.2f}%")
-        
+
         if peso_cerebro_g > 0:
             peso_tumor_g = peso_cerebro_g * (pct / 100)
             print(f">> Peso estimado do cérebro: {peso_cerebro_g:.2f}g")
             print(f">> Peso estimado da área afetada: {peso_tumor_g:.2f}g")
+    else:
+        print("\n[NORMAL]: Nenhuma anomalia significativa foi detectada nos testes primários.")
 else:
     print("\n[NORMAL]: Nenhuma anomalia significativa foi detectada nos testes primários.")
 
+# Redimensiona as imagens para exibição
+LARGURA_EXIBICAO = 200
+def redimensionar(imagem):
+    h, w = imagem.shape[:2]
+    nova_altura = int(h * LARGURA_EXIBICAO / w)
+    return cv2.resize(imagem, (LARGURA_EXIBICAO, nova_altura))
+
 # Abre na tela as 4 fases do processamento
-cv2.imshow('MRI Original', img)
-cv2.imshow('Massa Craniana', thresh_cerebro)
-cv2.imshow('Processamento(Threshold)', thresh)
-cv2.imshow('Diagnostico', diagnostico)
+cv2.imshow('MRI Original', redimensionar(img))
+cv2.imshow('Massa Craniana', redimensionar(thresh_cerebro))
+cv2.imshow('Processamento(Threshold)', redimensionar(thresh))
+cv2.imshow('Diagnostico', redimensionar(diagnostico))
 
 print("\n(Pressione qualquer tecla nas janelas de imagem para fechar o programa)")
 cv2.waitKey(0)

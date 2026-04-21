@@ -47,9 +47,9 @@ Ao executar o arquivo principal (`main.py`), a seguinte sequência acontece:
 3. **Sorteio Aleatório**: Tendo os arquivos mapeados em disco, ele simula um paciente sorteando uma das ressonâncias aleatoriamente.
 4. **Análises e Processamento Analítico**: O script trabalha a foto convertendo-a para identificar todo o espaço preenchido pelo cérebro e, posteriormente, escaneia este mapeamento focando em pontos muito iluminados atípicos (anomalias).
 5. **Cálculos Matemáticos-Clínicos**: Tendo mapeado através de pixels a massa craniana inteira em relação à massa tumoral da imagem, é feito o cálculo do grau do dano. Com base na altura e sexo informados e da estimativa, o peso total do cérebro em gramas é calculado, derivando-se assim o peso que essa anomalia teria.
-6. **Resultados**: O script emite alertas via terminal e aciona o pop-up das imagem geradas em 4 camadas que mostram tudo o que o código analisou na radiologia (onde ele aplica a linha marcando a anomalia em vermelho, por exemplo).
+6. **Resultados**: O script emite alertas via terminal e aciona o pop-up das imagem geradas em 4 camadas que mostram tudo o que o código analisou na radiologia (onde ele aplica a linha marcando a anomalia em vermelho, por exemplo). Foi adicionado uma validação que apenas valores maiores que 1% serão exibidos como possível tumor, devido a chance de erro
 
-<--Adicionar minhas imagens e vídeos-->
+
 
 <br>
 
